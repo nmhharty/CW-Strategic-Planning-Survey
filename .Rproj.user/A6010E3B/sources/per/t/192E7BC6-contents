@@ -1,0 +1,132 @@
+---
+title: "Summary of CW Strategic Planning Survey 2022"
+author: "Nicole Harty"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+#load packages
+library(dplyr)
+library(googlesheets4)
+library(plotly)
+library(stringr)
+library(forcats)
+library(tidyr)
+library(kableExtra)
+
+#load data
+raw <- read_sheet("https://docs.google.com/spreadsheets/d/1-Cw424twBr0x6iOep4WLx63IHO9YosLsVDtXKtyP9xs/edit?resourcekey#gid=23067850", col_types = "c", sheet = 1) |>
+  mutate(ID = row_number())
+
+```
+
+```{r dataprep}
+#recode ranking to factors of just number
+raw[,c(2:8)] <- lapply(raw[,c(2:8)], factor, levels = c("1 (Highest Priority)", "2", "3", "4", "5", "6", "7 (Lowest Priority)"))
+raw[,c(2:8)] <- lapply(raw[,c(2:8)], fct_recode, "1" = "1 (Highest Priority)", "7" = "7 (Lowest Priority)")
+
+#clean up column names
+colnames(raw) <- c("Timestamp", "Events Rank", "Kids Team Rank", "Instruction Rank", "Safety Rank", "Infrastructure Rank", "Access and Conservation Rank", 
+                   "Other Rank", "Events Ideas", "Kids Team Ideas", "Instruction Ideas", "Safety Ideas", "Infrastructure Ideas", "Access and Conservation Ideas",
+                   "Other Ideas", "ID")
+
+#create df of rankings as numeric
+raw_numeric <- raw
+raw_numeric[,c(2:8)] <- lapply(raw_numeric[,c(2:8)], as.numeric)
+```
+
+# Background  
+A Google Form survey was sent to all Colorado Whitewater Board Members in July 2022 to inform strategic planning for the organization. Board members were asked to rank the areas of Events, Kids Team, Instruction, Safety, Infrastructure, Access/Conservation, and Other in order of priority with **1 being highest priority** and **7 being lowest priority**. Unfortunately, respondents were able to select the same priority rank for multiple areas. The intent was to force one ranking per area.
+
+# Results  
+A total of 13 anonymous responses were received (65% response rate).  
+
+The following chart shows the mean ranking for each category, with the highest to lowest priority from left to right. **Lower number indicates higher priority**. Below the chart is a table summarizing the same information.  
+
+```{r PriorityRankingGraphSummary}
+raw_numeric |>
+  select(16,2:8) |>
+  pivot_longer(cols = 2:8, names_to = "Category", values_to = "Rank") |>
+  mutate(Category = str_sub(Category, 1,-5)) |>
+  group_by(Category) |>
+  summarise("Mean Ranking" = round(mean(Rank, na.rm = TRUE),2)) |>
+  mutate(Rescaled = (7/`Mean Ranking`)) |>
+plot_ly(x = ~Category,
+        y = ~`Mean Ranking`,
+        marker = list(color = c("#3d6ddb", "#3d6ddb", "#3d6ddb", "#5bab49", "#3d6ddb", "#3d6ddb", "#5bab49"))) %>%
+  layout(xaxis = list(categoryorder = "total ascending"),
+         yaxis = list(title = "Mean Ranking"))
+```
+
+```{r PriorityRankingTableSummary}
+raw_numeric |>
+  select(16,2:8) |>
+  pivot_longer(cols = 2:8, names_to = "Category", values_to = "Rank") |>
+  mutate(Category = str_sub(Category, 1,-5)) |>
+  group_by(Category) |>
+  summarise("Mean Ranking" = round(mean(Rank, na.rm = TRUE),2), "Min Ranking" = min(Rank, na.rm = TRUE), "Max Ranking" = max(Rank, na.rm = TRUE)) |>
+  arrange(`Mean Ranking`) |>
+  kable(caption = "Ranking of Where to Invest Resources") |>
+  kable_paper(full_width = F, "hover") |>
+  row_spec(1:2, bold = T, background = "#dbce3d") |>
+  footnote("The smaller the ranking, the greater the priority. Table is ordered from highest priority to lowest priority.")
+
+```
+**Key Takeaways**:  
+
+* Instruction and Safety have consensus as the highest priority areas to invest resources, followed by Events.  
+* All categories except Kids Team and Other were selected by at least one respondent as the highest priority.  
+* There is a wide range of opinions about the priority of other categories.  
+
+Below is a summary of the ideas shared by board members as to how to invest resources. This summary includes the top themes, but all ideas should be reviewed. After this summary are tables with the themes from each category, ordered by most to least common. The [appendix](#appendix) includes the full responses to these questions for additional details.  
+
+|Events|Kids Team|Instruction|Safety|Infrastructure|Access and Conservation|  
+|-----|------|-----|-----|-----|-----|  
+|Provide non-alcoholic beverages, swag for purchase, and food at events including river weekends and Thirsty Thursdays<br><br>Host a volunteer appreciation event | Maintain boats and gear for the Kids Team to use, including managing who uses and how<br><br>Ensure leadership is engaged<br><br>Spin off the Kids Team from the adult programming, including separate events and budgeting<br><br>Provide team clothing | Maintain boats and gear for use during classes, including purchasing a trailer for transport<br><br>Provide instructor incentives<br><br>Offer classes throughout the year, by partnering with local businesses or offering through CW<br><br>Offer wider variety of classes, including non-kayaking (i.e. rafting) and advanced instruction | Provide free or reduced SWR, fist aid, and CPR classes for instructors, volunteers, and members<br><br>Offer classes throughout the year including at river weekends and during the off season<br><br>Offer skills practice and smaller classes on a regular basis | Consider paid positions on the board or staff<br><br>Ensure an engaged, strong board | Host member volunteer days such as river clean-up days or adopt-a-highway near rivers<br><br>Invest in access and play wave improvements for the Blue River, Golden Bleacher Hole and/or BV Pocket Wave |
+
+
+```{r IdeasThemesWrangle}
+IdeaThemes <- read_sheet("https://docs.google.com/spreadsheets/d/1-Cw424twBr0x6iOep4WLx63IHO9YosLsVDtXKtyP9xs/edit?resourcekey#gid=23067850", col_types = "c", sheet = 2) 
+IdeaThemes[,c(1:6)] <- lapply(IdeaThemes[,c(1:6)], factor)
+
+```
+
+```{r IdeasThemesTables, echo=FALSE, results ="asis"}
+Categories <- colnames(IdeaThemes)
+
+cat(paste0("## Themes by Category {.tabset} \n"))
+
+  for (i in Categories) {
+   cat(paste0("### ",i," \n"))
+print(IdeaThemes |>
+    group_by((IdeaThemes)[i]) |>
+    count() |>
+    arrange(desc(n)) |>
+    kable() |>
+    kable_paper(full_width = F, "hover"))    
+cat("\n\n")
+
+ }
+```
+
+# Appendix {#appendix}  
+```{r IdeasFullResponses, results='asis'}
+IdeaCols = c(9:15)
+
+cat(paste0("## Full Responses by Category {.tabset} \n"))
+
+for (i in IdeaCols) {
+  cat(paste0("### ",paste0(names(raw)[i])," \n"))
+  raw |>
+    select(i) |>
+    kable() |>
+    kable_paper(full_width = F, "hover") |>
+    print()
+}
+
+```
