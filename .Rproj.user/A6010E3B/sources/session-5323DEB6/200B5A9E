@@ -3,7 +3,7 @@
     "path": "~/Documents/CW/CW Strategic Planning Survey/CW 2022 Strategic Planning Survey Results.qmd",
     "project_path": "CW 2022 Strategic Planning Survey Results.qmd",
     "type": "quarto_markdown",
-    "hash": "3999845365",
+    "hash": "400193792",
     "contents": "",
     "dirty": false,
     "created": 1660005939293.0,
@@ -13,7 +13,7 @@
         "tempName": "Untitled1",
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "14,15",
+        "cursorPosition": "1,61",
         "scrollLine": "0",
         "last_setup_crc32": "5323DEB695ac84fb",
         "rmdVisualMode": "false",
@@ -23,11 +23,11 @@
         "rmdVisualModeLocation": "6280:1158"
     },
     "folds": "",
-    "lastKnownWriteTime": 1660014864,
+    "lastKnownWriteTime": 1660015474,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1660014864271,
+    "last_content_update": 1660015474840,
     "read_only": false,
     "read_only_alternatives": []
 }

@@ -1,5 +1,5 @@
 ---
-title: "Summary of CW Strategic Planning Survey 2022"
+title: "Summary of CW Strategic Planning Survey 2022 - RMarkdown"
 author: "Nicole Harty"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
 output: 
