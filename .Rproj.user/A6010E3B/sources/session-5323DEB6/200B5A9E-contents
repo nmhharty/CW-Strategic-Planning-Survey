@@ -1,15 +1,23 @@
 ---
 title: "Summary of CW Strategic Planning Survey 2022"
+execute: 
+  echo: false
+  warning: false
+  message: false
+crossref: 
+  fig-title: "Figure"
 author: "Nicole Harty"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
 output: 
   html_document:
     toc: true
     toc_float: true
+theme: cerulean
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```{r}
+#| label: setup
+
 #load packages
 library(dplyr)
 library(googlesheets4)
@@ -22,10 +30,11 @@ library(kableExtra)
 #load data
 raw <- read_sheet("https://docs.google.com/spreadsheets/d/1-Cw424twBr0x6iOep4WLx63IHO9YosLsVDtXKtyP9xs/edit?resourcekey#gid=23067850", col_types = "c", sheet = 1) |>
   mutate(ID = row_number())
-
 ```
 
-```{r dataprep}
+```{r}
+#| label: dataprep
+
 #recode ranking to factors of just number
 raw[,c(2:8)] <- lapply(raw[,c(2:8)], factor, levels = c("1 (Highest Priority)", "2", "3", "4", "5", "6", "7 (Lowest Priority)"))
 raw[,c(2:8)] <- lapply(raw[,c(2:8)], fct_recode, "1" = "1 (Highest Priority)", "7" = "7 (Lowest Priority)")
@@ -48,9 +57,13 @@ A Google Form survey was sent to all Colorado Whitewater Board Members in July 2
 
 A total of `r nrow(raw)` anonymous responses were received (65% response rate).
 
-The following chart shows the mean ranking for each category, with the highest to lowest priority from left to right. **Lower number indicates higher priority**. Below the chart is a table summarizing the same information.
+@fig-PriorityRankingGraph and @fig-PriorityRankingTable show the mean ranking for each category, as both a graph and a table. In the graph, highest priority is on the left. **Lower number indicates higher priority**.
 
-```{r PriorityRankingGraphSummary}
+```{r}
+#| label: fig-PriorityRankingGraph
+#| fig-cap: Priority Rankings Graph
+#| fig-alt: Bar graph with investment area categories on the x-axis and mean ranking on the y-axis, ordered from highest priority (lowest numerical ranking) to lowest priority (highest numerical ranking) from left to right. The furthest left two categories, the highest priority, are in green bars and the remaining bars are blue.
+
 raw_numeric |>
   select(16,2:8) |>
   pivot_longer(cols = 2:8, names_to = "Category", values_to = "Rank") |>
@@ -65,7 +78,9 @@ plot_ly(x = ~Category,
          yaxis = list(title = "Mean Ranking"))
 ```
 
-```{r PriorityRankingTableSummary}
+```{r}
+#| label: fig-PriorityRankingTable
+#| fig-cap: Priority Rankings Table
 raw_numeric |>
   select(16,2:8) |>
   pivot_longer(cols = 2:8, names_to = "Category", values_to = "Rank") |>
@@ -92,16 +107,20 @@ Below is a summary of the ideas shared by board members as to how to invest reso
 |------------|------------|------------|------------|------------|------------|
 | Provide non-alcoholic beverages, swag for purchase, and food at events including river weekends and Thirsty Thursdays<br><br>Host a volunteer appreciation event | Maintain boats and gear for the Kids Team to use, including managing who uses and how<br><br>Ensure leadership is engaged<br><br>Spin off the Kids Team from the adult programming, including separate events and budgeting<br><br>Provide team clothing | Maintain boats and gear for use during classes, including purchasing a trailer for transport<br><br>Provide instructor incentives<br><br>Offer classes throughout the year, by partnering with local businesses or offering through CW<br><br>Offer wider variety of classes, including non-kayaking (i.e. rafting) and advanced instruction | Provide free or reduced SWR, fist aid, and CPR classes for instructors, volunteers, and members<br><br>Offer classes throughout the year including at river weekends and during the off season<br><br>Offer skills practice and smaller classes on a regular basis | Consider paid positions on the board or staff<br><br>Ensure an engaged, strong board | Host member volunteer days such as river clean-up days or adopt-a-highway near rivers<br><br>Invest in access and play wave improvements for the Blue River, Golden Bleacher Hole and/or BV Pocket Wave |
 
-```{r IdeasThemesWrangle}
+```{r}
+#| label: IdeasThemesWrangle
+
 IdeaThemes <- read_sheet("https://docs.google.com/spreadsheets/d/1-Cw424twBr0x6iOep4WLx63IHO9YosLsVDtXKtyP9xs/edit?resourcekey#gid=23067850", col_types = "c", sheet = 2) 
 IdeaThemes[,c(1:6)] <- lapply(IdeaThemes[,c(1:6)], factor)
 
 ```
 
-```{r IdeasThemesTables, echo=FALSE, results ="asis"}
+## Themes by Category
+::: panel-tabset
+```{r}
+#| label: IdeasThemesTables
+#| results: asis
 Categories <- colnames(IdeaThemes)
-
-cat(paste0("## Themes by Category {.tabset} \n"))
 
   for (i in Categories) {
    cat(paste0("### ",i," \n"))
@@ -115,13 +134,17 @@ cat("\n\n")
 
  }
 ```
+:::
 
 # Appendix {#appendix}
 
-```{r IdeasFullResponses, results='asis'}
-IdeaCols = c(9:15)
+## Full Responses by Category
+::: {.panel-tabset}
+```{r}
+#| label: IdeasFullResponses
+#| results: 'asis'
 
-cat(paste0("## Full Responses by Category {.tabset} \n"))
+IdeaCols = c(9:15)
 
 for (i in IdeaCols) {
   cat(paste0("### ",paste0(names(raw)[i])," \n"))
@@ -133,3 +156,4 @@ for (i in IdeaCols) {
 }
 
 ```
+:::
